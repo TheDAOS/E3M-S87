@@ -59,21 +59,19 @@ class Products {
                     currentProductDetails.demand = "Low";
                 }
                 this.#demand[key] = temp;
+                this.priceAdjustmentAlgorithm(key);
                 console.log(this.productDetails[key].demand, this.productDetails[key].price);
             }
-            this.priceAdjustmentAlgorithm();
             console.log(this.#demand);
-        }, 30000);
-        // }, 1000);
+        // }, 30000);
+        }, 1000);
     }
 
-    priceAdjustmentAlgorithm() {
-        for (const key in this.productDetails){
-            if (this.productDetails[key].demand === "High"){
-                this.productDetails[key].price = Math.floor(this.productDetails[key].price * 1.10);
-            } else if (this.productDetails[key].demand === "Low"){
-                this.productDetails[key].price = Math.ceil(this.productDetails[key].price * 0.90);
-            }
+    priceAdjustmentAlgorithm(key) {
+        if (this.productDetails[key].demand === "High" && this.productDetails[key].inventoryLevel < 10){
+            this.productDetails[key].price = Math.floor(this.productDetails[key].price * 1.10);
+        } else if (this.productDetails[key].demand === "Low" && this.productDetails[key].inventoryLevel > 30){
+            this.productDetails[key].price = Math.ceil(this.productDetails[key].price * 0.90);
         }
     }
 
@@ -88,5 +86,5 @@ ec.addProduct("Soap", 40, 20, "Low");
 
 // console.log(ec);
 
-ec.sellingProduct(1001, 6);
+ec.sellingProduct(1001, 15);
 // console.log(ec);
