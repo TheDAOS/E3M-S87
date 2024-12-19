@@ -62,7 +62,7 @@ class Products {
                 }
                 this.#demand[key] = temp;
                 this.priceAdjustmentAlgorithm(key);
-                console.log(this.productDetails[key].demand, this.productDetails[key].price);
+                // console.log(this.productDetails[key].demand, this.productDetails[key].price);
             }
             console.log(this.#demand);
         // }, 30000);
