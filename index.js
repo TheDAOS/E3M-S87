@@ -67,6 +67,8 @@ class Products {
                     temp = currentProductDetails.salesData.reduce((accumulator, element) => accumulator+=Math.floor(element/currentProductDetails.price), 0);
                 }
                 
+                let demandTemp = currentProductDetails.demand;
+
                 if (temp - this.#demand[key] > 5) {
                     currentProductDetails.demand = "High";
                 } else if (temp - this.#demand[key] > 3) {
@@ -75,14 +77,17 @@ class Products {
                     currentProductDetails.demand = "Low";
                 }
                 this.#demand[key] = temp;
-                this.uiPriceAdjustment(`<strong>${currentProductDetails.name}'s</strong> demand is <strong>${currentProductDetails.demand}</strong>`, "alert-warning");
+
+                if (demandTemp !== currentProductDetails.demand){
+                    this.uiPriceAdjustment(`<strong>${currentProductDetails.name}'s</strong> demand is <strong>${currentProductDetails.demand}</strong>`, "alert-warning");
+                }
                 this.priceAdjustmentAlgorithm(key);
                 // console.log(this.productDetails[key].demand, this.productDetails[key].price);
             }
             // console.log(this.#demand);
             this.uiProductDetails()
-        }, 10000);
-        // }, 1000);
+        // }, 10000);
+        }, 100);
     }
 
     priceAdjustmentAlgorithm(key) {
@@ -91,18 +96,18 @@ class Products {
         if (this.productDetails[key].demand === "High" && this.productDetails[key].inventoryLevel < 10){
             this.productDetails[key].price = Math.floor(this.productDetails[key].price * 1.10);
             isPriceChanged = true;
-        } else if (this.productDetails[key].demand === "Low" && this.productDetails[key].inventoryLevel > 30){
+        } else if (this.productDetails[key].demand === "Low" && this.productDetails[key].inventoryLevel > 30 && this.#competitor_prices[key][0] >= this.productDetails[key].price){
             this.productDetails[key].price = Math.ceil(this.productDetails[key].price * 0.90);
             isPriceChanged = true;
         }
 
         let CpAvg = this.competitorPricesAverage(key);
         if (CpAvg !== -1) {
-            if (CpAvg > this.productDetails[key].price) {
-                this.productDetails[key].price = Math.floor(this.productDetails[key].price * 1.05);
+            if (CpAvg > this.productDetails[key].price && (CpAvg + (CpAvg * 0.10)) < this.productDetails[key].price) {
+                this.productDetails[key].price = Math.floor(this.productDetails[key].price * 1.10);
                 isPriceChanged = true;
-            } else if (CpAvg < this.productDetails[key].price) {
-                this.productDetails[key].price = Math.floor(this.productDetails[key].price * 0.95);
+            } else if (CpAvg < this.productDetails[key].price && (CpAvg - (CpAvg * 0.10)) < this.productDetails[key].price) {
+                this.productDetails[key].price = Math.floor(this.productDetails[key].price * 0.90);
                 isPriceChanged = true;
             }
         }
@@ -126,6 +131,7 @@ class Products {
 
     addCompetitorPrices(id, arr) {
         if (this.productDetails[id]) {
+            arr.sort((a, b) => b - a);
             this.#competitor_prices[id] = arr;
         } else {
             this.uiPriceAdjustment(`Enter Valid Data.`, "alert-danger");
@@ -225,13 +231,14 @@ class Products {
 const ec = new Products();
 
 ec.addProduct("Noodle", 70, 10, "Normal");
-ec.addProduct("Soap", 40, 20, "Low");
+ec.addProduct("Chocolate", 40, 20, "Low");
 ec.addProduct();
 
 // console.log(ec);
 
 ec.sellingProduct(1001, 15);
 
+ec.addCompetitorPrices(1000, [65, 50, 70, 60]);
 ec.addCompetitorPrices(1001, [40, 44, 47, 50]);
 // console.log(ec);
 
