@@ -2,22 +2,28 @@
 
 // 1. Product Catalog
 class Products {
+    #demand;
+
     constructor() {
         this.productDetails = {};
         this.productID = 1000;
-        this.salesData = [];
+        this.#demand = {};
+        this.calculateDemand();
     }
 
     addProduct(name, price, inventoryLevel, demand) {
         if (name && price && inventoryLevel 
             && (demand === "Low" || demand === "Normal" || demand === "High")
         ){
-            this.productDetails[this.productID++] = {
+            this.productDetails[this.productID] = {
                 name,
                 price,
                 inventoryLevel,
                 demand,
+                salesData: [],
             };
+            this.#demand[this.productID] = 0;
+            this.productID++;
             console.log(`${name} inventory added.`);
         } else {
             console.log(`Enter Valid Data.`);
@@ -27,13 +33,7 @@ class Products {
     sellingProduct(id, sold) {
         if (this.productDetails[id] && this.productDetails[id].inventoryLevel >= sold) {
             this.productDetails[id].inventoryLevel -= sold ;
-            this.salesData.push({
-                name: this.productDetails[id].name,
-                price: this.productDetails[id].price,
-                quantity: sold,
-                totalPrice: this.productDetails[id].price * sold,
-                demand: this.productDetails[id].demand,
-            });
+            this.productDetails[id].salesData.push((this.productDetails[id].price * sold));
             console.log(`Sold ${sold} ${this.productDetails[id].name}`);
             
         } else {
@@ -41,17 +41,44 @@ class Products {
         }
     }
 
-    // calculateDemand() {
-    //     setInterval(() => {
-    //         if ()
-    //     }, 30000);
-    // }
+    async calculateDemand() {
+        setInterval(() => {
+            for (const key in this.productDetails) {
+                const currentProductDetails = this.productDetails[key];
+
+                let temp = 0
+                if (currentProductDetails.salesData.length > 0){
+                    temp = currentProductDetails.salesData.reduce((accumulator, element) => accumulator+=Math.floor(element/currentProductDetails.price), 0);
+                }
+                
+                if (temp - this.#demand[key] > 5) {
+                    currentProductDetails.demand = "High";
+                } else if (temp - this.#demand[key] > 3) {
+                    currentProductDetails.demand = "Normal";
+                } else {
+                    currentProductDetails.demand = "Low";
+                }
+                this.#demand[key] = temp;
+                console.log(this.productDetails[key].demand, this.productDetails[key].price);
+            }
+            this.priceAdjustmentAlgorithm();
+            console.log(this.#demand);
+        }, 30000);
+        // }, 1000);
+    }
+
+    priceAdjustmentAlgorithm() {
+        for (const key in this.productDetails){
+            if (this.productDetails[key].demand === "High"){
+                this.productDetails[key].price = Math.floor(this.productDetails[key].price * 1.10);
+            } else if (this.productDetails[key].demand === "Low"){
+                this.productDetails[key].price = Math.ceil(this.productDetails[key].price * 0.90);
+            }
+        }
+    }
 
 }
 
-// 2. Demand Tracking
-
-//     Track product sales over time to calculate real-time demand.
 
 
 const ec = new Products();
@@ -59,7 +86,7 @@ const ec = new Products();
 ec.addProduct("Noodle", 70, 10, "Normal");
 ec.addProduct("Soap", 40, 20, "Low");
 
-console.log(ec);
+// console.log(ec);
 
-ec.sellingProduct(1001, 2);
-console.log(ec);
+ec.sellingProduct(1001, 6);
+// console.log(ec);
