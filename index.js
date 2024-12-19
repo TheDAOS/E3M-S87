@@ -86,8 +86,8 @@ class Products {
             }
             // console.log(this.#demand);
             this.uiProductDetails()
-        // }, 10000);
-        }, 100);
+        }, 10000);
+        // }, 100);
     }
 
     priceAdjustmentAlgorithm(key) {
