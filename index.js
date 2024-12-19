@@ -40,7 +40,17 @@ class Products {
             this.productDetails[id].inventoryLevel -= sold ;
             this.productDetails[id].salesData.push((this.productDetails[id].price * sold));
 
-            this.uiPriceAdjustment(`Sold <strong>${sold}</strong> of <strong>${this.productDetails[id].name}</strong> for <strong>Rs.${this.productDetails[id].price}</strong> each`, "alert-info");
+            this.uiPriceAdjustment(`Sold <strong>${sold}</strong> of <strong>${this.productDetails[id].name}</strong> for <strong>Rs.${this.productDetails[id].price}</strong>`, "alert-info");
+        } else {
+            this.uiPriceAdjustment(`Enter Valid Data.`, "alert-danger");
+        }
+        this.uiProductDetails()
+    }
+
+    addingInventory(id, more) {
+        if (this.productDetails[id] && more > 0) {
+            this.productDetails[id].inventoryLevel += more ;
+            this.uiPriceAdjustment(`Added <strong>${more}</strong> more to inventory of <strong>${this.productDetails[id].name}</strong> total inventory: <strong>${this.productDetails[id].inventoryLevel}</strong>`, "alert-info");
         } else {
             this.uiPriceAdjustment(`Enter Valid Data.`, "alert-danger");
         }
@@ -65,12 +75,13 @@ class Products {
                     currentProductDetails.demand = "Low";
                 }
                 this.#demand[key] = temp;
+                this.uiPriceAdjustment(`<strong>${currentProductDetails.name}'s</strong> demand is <strong>${currentProductDetails.demand}</strong>`, "alert-warning");
                 this.priceAdjustmentAlgorithm(key);
                 // console.log(this.productDetails[key].demand, this.productDetails[key].price);
             }
             // console.log(this.#demand);
             this.uiProductDetails()
-        }, 3000);
+        }, 10000);
         // }, 1000);
     }
 
@@ -169,15 +180,16 @@ class Products {
         if (!message)
             return;
 
-        this.#dashboardAlert.push([message, type]);
+        const timestamp = new Date().toLocaleString();
+        this.#dashboardAlert.unshift([message, type, timestamp]);
 
         if (this.#dashboardAlert.length > 5){
-            this.#dashboardAlert.shift()
+            this.#dashboardAlert.pop()
         }
 
 
-        const productDetailsTable = document.getElementById('priceAdjustment');
-        productDetailsTable.innerHTML = '';
+        const alertMessage = document.getElementById('priceAdjustment');
+        alertMessage.innerHTML = '';
         
         /*
         <div class="alert alert-primary" role="alert">
@@ -185,24 +197,24 @@ class Products {
         </div>
         */
         
-        let tableHTML = ` 
+        let alertHTML = ` 
         <div class="card-header">
-            Notifications
+            Alerts
         </div>
         `;
         
         for (let i = 0; i<this.#dashboardAlert.length; i++) {
 
-            tableHTML += `
+            alertHTML += `
             <div class="m-2 alert ${this.#dashboardAlert[i][1]} alert-dismissible fade show" role="alert">
                 ${this.#dashboardAlert[i][0]}
+                <p class="fw-lighter fs-6">${this.#dashboardAlert[i][2]}</p>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             `;
         }
         
-        
-        productDetailsTable.innerHTML = tableHTML;
+        alertMessage.innerHTML = alertHTML;
     }
     
 
@@ -222,3 +234,7 @@ ec.sellingProduct(1001, 15);
 
 ec.addCompetitorPrices(1001, [40, 44, 47, 50]);
 // console.log(ec);
+
+setTimeout(() => {
+    ec.addingInventory(1000, 50);
+}, 5000);
